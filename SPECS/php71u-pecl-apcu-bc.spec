@@ -11,8 +11,7 @@
 #
 # Please, preserve the changelog entries
 #
-%global proj_name  apcu_bc
-%global pecl_name  apcu-bc
+%global pecl_name  apcu_bc
 %global ext_name   apc
 %global apcver     %(%{_bindir}/php -r 'echo (phpversion("apcu")?:0);' 2>/dev/null || echo 65536)
 %global with_zts   0%{!?_without_zts:%{?__ztsphp:1}}
@@ -24,11 +23,11 @@ Name:           %{php}-pecl-apcu-bc
 Summary:        APCu Backwards Compatibility Module
 Version:        1.0.3
 Release:        1.ius%{?dist}
-Source0:        http://pecl.php.net/get/%{proj_name}-%{version}.tgz
+Source0:        http://pecl.php.net/get/%{pecl_name}-%{version}.tgz
 
 License:        PHP
 Group:          Development/Languages
-URL:            http://pecl.php.net/package/APCu
+URL:            http://pecl.php.net/package/%{pecl_name}
 
 BuildRequires:  %{php}-devel
 BuildRequires:  pecl >= 1.10.0
@@ -59,10 +58,10 @@ Provides:       php-pecl(APC)             = %{apcver}
 Provides:       php-pecl(APC)%{?_isa}     = %{apcver}
 Provides:       %{php}-pecl(APC)          = %{apcver}
 Provides:       %{php}-pecl(APC)%{?_isa}  = %{apcver}
-Provides:       php-pecl(%{proj_name})         = %{version}
-Provides:       php-pecl(%{proj_name})%{?_isa} = %{version}
-Provides:       %{php}-pecl(%{proj_name})         = %{version}
-Provides:       %{php}-pecl(%{proj_name})%{?_isa} = %{version}
+Provides:       php-pecl(%{pecl_name})         = %{version}
+Provides:       php-pecl(%{pecl_name})%{?_isa} = %{version}
+Provides:       %{php}-pecl(%{pecl_name})         = %{version}
+Provides:       %{php}-pecl(%{pecl_name})%{?_isa} = %{version}
 
 # conflict with the stock name
 Conflicts:      php-pecl-apc              < %{apcver}
@@ -79,7 +78,7 @@ This module provides a backwards compatible API for APC.
 
 %prep
 %setup -qc
-mv %{proj_name}-%{version} NTS
+mv %{pecl_name}-%{version} NTS
 
 # Don't install/register tests
 sed -e 's/role="test"/role="src"/' \
@@ -144,7 +143,7 @@ install -D -m 644 package.xml %{buildroot}%{pecl_xmldir}/%{name}.xml
 
 # Documentation
 for i in $(grep 'role="doc"' package.xml | sed -e 's/^.*name="//;s/".*$//')
-do install -Dpm 644 NTS/$i %{buildroot}%{pecl_docdir}/%{proj_name}/$i
+do install -Dpm 644 NTS/$i %{buildroot}%{pecl_docdir}/%{pecl_name}/$i
 done
 
 
@@ -183,7 +182,7 @@ popd
 
 %files
 %license NTS/LICENSE
-%doc %{pecl_docdir}/%{proj_name}
+%doc %{pecl_docdir}/%{pecl_name}
 %{pecl_xmldir}/%{name}.xml
 
 %config(noreplace) %{php_inidir}/%{ini_name}
