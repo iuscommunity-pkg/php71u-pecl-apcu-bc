@@ -1,3 +1,5 @@
+# IUS spec file for php71u-pecl-apcu-bc, forked from:
+#
 # Fedora spec file for php-pecl-apcu-bc
 # without SCL compatibility, from
 #
@@ -16,34 +18,59 @@
 %global with_zts   0%{!?_without_zts:%{?__ztsphp:1}}
 # After 40-apcu.ini
 %global ini_name   50-%{ext_name}.ini
+%global php        php71u
 
-Name:           php-pecl-%{pecl_name}
+Name:           %{php}-pecl-apcu-bc
 Summary:        APCu Backwards Compatibility Module
 Version:        1.0.3
-Release:        5%{?dist}
+Release:        1.ius%{?dist}
 Source0:        http://pecl.php.net/get/%{proj_name}-%{version}.tgz
 
 License:        PHP
 Group:          Development/Languages
 URL:            http://pecl.php.net/package/APCu
 
-BuildRequires:  php-devel > 7
-BuildRequires:  php-pear
-BuildRequires:  php-pecl-apcu-devel >= 5.1.2
+BuildRequires:  %{php}-devel
+BuildRequires:  pecl >= 1.10.0
+BuildRequires:  %{php}-pecl-apcu-devel >= 5.1.2
 
 Requires:       php(zend-abi) = %{php_zend_api}
 Requires:       php(api) = %{php_core_api}
-Requires:       php-pecl-apcu%{?_isa} >= 5.1.2
+Requires:       %{php}-pecl-apcu%{?_isa} >= 5.1.2
 
-Obsoletes:      php-pecl-apc              < 4
+# provide the stock name
+Provides:       php-pecl-apc              = %{apcver}
+Provides:       php-pecl-apc%{?_isa}      = %{apcver}
+Provides:       php-pecl-apcu-bc          = %{version}
+Provides:       php-pecl-apcu-bc%{?_isa}  = %{version}
+
+# provide the stock and IUS names without pecl
 Provides:       php-apc                   = %{apcver}
 Provides:       php-apc%{?_isa}           = %{apcver}
-Provides:       php-pecl-apc              = %{apcver}-%{release}
-Provides:       php-pecl-apc%{?_isa}      = %{apcver}-%{release}
+Provides:       %{php}-apc                = %{apcver}
+Provides:       %{php}-apc%{?_isa}        = %{apcver}
+Provides:       php-apcu-bc               = %{version}
+Provides:       php-apcu-bc%{?_isa}       = %{version}
+Provides:       %{php}-apcu-bc            = %{version}
+Provides:       %{php}-apcu-bc%{?_isa}    = %{version}
+
+# provide the stock and IUS names in pecl() format
 Provides:       php-pecl(APC)             = %{apcver}
 Provides:       php-pecl(APC)%{?_isa}     = %{apcver}
+Provides:       %{php}-pecl(APC)          = %{apcver}
+Provides:       %{php}-pecl(APC)%{?_isa}  = %{apcver}
 Provides:       php-pecl(%{proj_name})         = %{version}
 Provides:       php-pecl(%{proj_name})%{?_isa} = %{version}
+Provides:       %{php}-pecl(%{proj_name})         = %{version}
+Provides:       %{php}-pecl(%{proj_name})%{?_isa} = %{version}
+
+# conflict with the stock name
+Conflicts:      php-pecl-apc              < %{apcver}
+Conflicts:      php-pecl-apcu-bc          < %{version}
+
+%{?filter_provides_in: %filter_provides_in %{php_extdir}/.*\.so$}
+%{?filter_provides_in: %filter_provides_in %{php_ztsextdir}/.*\.so$}
+%{?filter_setup}
 
 
 %description
@@ -59,14 +86,14 @@ sed -e 's/role="test"/role="src"/' \
     -e '/LICENSE/s/role="doc"/role="src"/' \
     -i package.xml
 
-cd NTS
+pushd NTS
 # Sanity check, really often broken
 extver=$(sed -n '/#define PHP_APCU_BC_VERSION/{s/.* "//;s/".*$//;p}' php_apc.h)
 if test "x${extver}" != "x%{version}%{?prever}%{?gh_date:dev}"; then
    : Error: Upstream extension version is ${extver}, expecting %{version}%{?prever}%{?gh_date:dev}.
    exit 1
 fi
-cd ..
+popd
 
 %if %{with_zts}
 # duplicate for ZTS build
@@ -82,20 +109,22 @@ EOF
 
 
 %build
-cd NTS
+pushd NTS
 %{_bindir}/phpize
 %configure \
    --enable-apcu-bc \
    --with-php-config=%{_bindir}/php-config
 make %{?_smp_mflags}
+popd
 
 %if %{with_zts}
-cd ../ZTS
+pushd ZTS
 %{_bindir}/zts-phpize
 %configure \
    --enable-apcu-bc \
    --with-php-config=%{_bindir}/zts-php-config
 make %{?_smp_mflags}
+popd
 %endif
 
 
@@ -120,7 +149,7 @@ done
 
 
 %check
-cd NTS
+pushd NTS
 # Check than both extensions are reported (BC mode)
 %{__php} -n \
    -d extension=apcu.so \
@@ -132,10 +161,11 @@ TEST_PHP_EXECUTABLE=%{__php} \
 TEST_PHP_ARGS="-n -d extension=apcu.so -d extension=%{buildroot}%{php_extdir}/apc.so" \
 NO_INTERACTION=1 \
 REPORT_EXIT_STATUS=1 \
-%{_bindir}/php -n run-tests.php --show-diff
+%{__php} -n run-tests.php --show-diff
+popd
 
 %if %{with_zts}
-cd ../ZTS
+pushd ZTS
 %{__ztsphp} -n \
    -d extension=apcu.so \
    -d extension=%{buildroot}%{php_ztsextdir}/apc.so \
@@ -147,6 +177,7 @@ TEST_PHP_ARGS="-n -d extension=apcu.so -d extension=%{buildroot}%{php_ztsextdir}
 NO_INTERACTION=1 \
 REPORT_EXIT_STATUS=1 \
 %{__ztsphp} -n run-tests.php --show-diff
+popd
 %endif
 
 
@@ -165,6 +196,9 @@ REPORT_EXIT_STATUS=1 \
 
 
 %changelog
+* Tue Mar 21 2017 Carl George <carl.george@rackspace.com> - 1.0.3-1.ius
+- Port from Fedora to IUS
+
 * Sat Feb 11 2017 Fedora Release Engineering <releng@fedoraproject.org> - 1.0.3-5
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_26_Mass_Rebuild
 
