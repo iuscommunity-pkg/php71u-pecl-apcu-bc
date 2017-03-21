@@ -14,10 +14,11 @@
 %global pecl_name  apcu_bc
 %global ext_name   apc
 %global apcver     %(%{_bindir}/php -r 'echo (phpversion("apcu")?:0);' 2>/dev/null || echo 65536)
-%global with_zts   0%{!?_without_zts:%{?__ztsphp:1}}
 # After 40-apcu.ini
 %global ini_name   50-%{ext_name}.ini
 %global php        php71u
+
+%bcond_without zts
 
 Name:           %{php}-pecl-apcu-bc
 Summary:        APCu Backwards Compatibility Module
@@ -97,7 +98,7 @@ if test "x${extver}" != "x%{version}%{?prever}%{?gh_date:dev}"; then
 fi
 popd
 
-%if %{with_zts}
+%if %{with zts}
 # duplicate for ZTS build
 cp -pr NTS ZTS
 %endif
@@ -119,7 +120,7 @@ pushd NTS
 make %{?_smp_mflags}
 popd
 
-%if %{with_zts}
+%if %{with zts}
 pushd ZTS
 %{_bindir}/zts-phpize
 %configure \
@@ -135,7 +136,7 @@ popd
 make -C NTS install INSTALL_ROOT=%{buildroot}
 install -D -m 644 %{ini_name} %{buildroot}%{php_inidir}/%{ini_name}
 
-%if %{with_zts}
+%if %{with zts}
 # Install the ZTS stuff
 make -C ZTS install INSTALL_ROOT=%{buildroot}
 install -D -m 644 %{ini_name} %{buildroot}%{php_ztsinidir}/%{ini_name}
@@ -166,7 +167,7 @@ REPORT_EXIT_STATUS=1 \
 %{__php} -n run-tests.php --show-diff
 popd
 
-%if %{with_zts}
+%if %{with zts}
 pushd ZTS
 %{__ztsphp} -n \
    -d extension=apcu.so \
@@ -201,7 +202,7 @@ fi
 %config(noreplace) %{php_inidir}/%{ini_name}
 %{php_extdir}/apc.so
 
-%if %{with_zts}
+%if %{with zts}
 %config(noreplace) %{php_ztsinidir}/%{ini_name}
 %{php_ztsextdir}/apc.so
 %endif
@@ -212,6 +213,7 @@ fi
 - Port from Fedora to IUS
 - Install package.xml as %%{pecl_name}.xml, not %%{name}.xml
 - Re-add scriptlets (file triggers not yet available in EL)
+- Use modern conditional for zts
 
 * Sat Feb 11 2017 Fedora Release Engineering <releng@fedoraproject.org> - 1.0.3-5
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_26_Mass_Rebuild
