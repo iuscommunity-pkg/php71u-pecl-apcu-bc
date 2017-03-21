@@ -1,1 +1,6 @@
-/apcu_bc-1.0.3.tgz
+BUILD
+BUILDROOT
+MOCK
+RPMS
+SOURCES/*.tgz
+SRPMS
