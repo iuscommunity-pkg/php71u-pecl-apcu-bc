@@ -28,7 +28,7 @@ Source0:        http://pecl.php.net/get/%{pecl_name}-%{version}.tgz
 
 License:        PHP
 Group:          Development/Languages
-URL:            http://pecl.php.net/package/%{pecl_name}
+URL:            https://pecl.php.net/package/%{pecl_name}
 
 BuildRequires:  %{php}-devel
 BuildRequires:  pecl >= 1.10.0
@@ -89,14 +89,12 @@ sed -e 's/role="test"/role="src"/' \
     -e '/LICENSE/s/role="doc"/role="src"/' \
     -i package.xml
 
-pushd NTS
 # Sanity check, really often broken
-extver=$(sed -n '/#define PHP_APCU_BC_VERSION/{s/.* "//;s/".*$//;p}' php_apc.h)
-if test "x${extver}" != "x%{version}%{?prever}%{?gh_date:dev}"; then
-   : Error: Upstream extension version is ${extver}, expecting %{version}%{?prever}%{?gh_date:dev}.
+extver=$(sed -n '/#define PHP_APCU_BC_VERSION/{s/.* "//;s/".*$//;p}' NTS/php_apc.h)
+if test "x${extver}" != "x%{version}"; then
+   : Error: Upstream extension version is ${extver}, expecting %{version}.
    exit 1
 fi
-popd
 
 %if %{with zts}
 # duplicate for ZTS build
@@ -117,7 +115,7 @@ pushd NTS
 %configure \
    --enable-apcu-bc \
    --with-php-config=%{_bindir}/php-config
-make %{?_smp_mflags}
+%make_build
 popd
 
 %if %{with zts}
@@ -126,7 +124,7 @@ pushd ZTS
 %configure \
    --enable-apcu-bc \
    --with-php-config=%{_bindir}/zts-php-config
-make %{?_smp_mflags}
+%make_build
 popd
 %endif
 
