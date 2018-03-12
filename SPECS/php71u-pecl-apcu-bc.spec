@@ -22,8 +22,8 @@
 
 Name:           %{php}-pecl-apcu-bc
 Summary:        APCu Backwards Compatibility Module
-Version:        1.0.3
-Release:        2.ius%{?dist}
+Version:        1.0.4
+Release:        1.ius%{?dist}
 Source0:        http://pecl.php.net/get/%{pecl_name}-%{version}.tgz
 
 License:        PHP
@@ -218,6 +218,9 @@ fi
 
 
 %changelog
+* Mon Mar 12 2018 Ben Harper <ben.harper@rackspace.com> - 1.0.4-1.ius
+- Latest upstream
+
 * Wed Jan 31 2018 Carl George <carl@george.computer> - 1.0.3-2.ius
 - Remove pear requirement and update scriptlets (adapted from remirepo)
 
